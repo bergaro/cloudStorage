@@ -10,17 +10,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.header.HeaderWriterFilter;
 import org.springframework.stereotype.Component;
 import ru.netology.cloudstorage.dto.AuthenticationRequestDto;
-//import ru.netology.cloudstorage.exceptions.JwtAuthenticationException;
-import ru.netology.cloudstorage.exceptions.UserNotExistException;
 import ru.netology.cloudstorage.model.Role;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -39,7 +34,7 @@ public class JwtTokenProvider {
     @Value("${jwt.token.secret}")
     private String secret;
 
-    @Value("${jwt.token.expired}0000")
+    @Value("${jwt.token.expired}")
     private long validityInMilliseconds;
 
     private UserDetailsService userDetailsService;
@@ -92,7 +87,11 @@ public class JwtTokenProvider {
 
     public String getUsername(String token) {
 
-        return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parser()
+                .setSigningKey(secret)
+                .parseClaimsJws(token.replace("Bearer ", ""))
+                .getBody()
+                .getSubject();
     }
 
     private List<String> getRoleNames(List<Role> userRoles) {
@@ -131,6 +130,7 @@ public class JwtTokenProvider {
         }
         return validState;
     }
+
 
 
 }

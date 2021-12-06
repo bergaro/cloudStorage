@@ -1,0 +1,27 @@
+version: '3.5'
+services:
+  mysql:
+    image: mysql
+    container_name: mysql_srv
+    command: --default-authentication-plugin=mysql_native_password
+    restart: on-failure
+    ports:
+      - "3306:3306"
+    networks:
+        - mysql_network
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: netology
+  rest:
+        build: .
+        image: service/storage
+        container_name: storage_srv
+        ports:
+          - "24001:24001"
+        networks:
+          - mysql_network
+        depends_on:
+          - mysql
+        restart: on-failure
+networks:
+  mysql_network:

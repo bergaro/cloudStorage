@@ -1,6 +1,6 @@
 package ru.netology.cloudstorage.security;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,7 +14,7 @@ import ru.netology.cloudstorage.service.CloudStorageService;
 
 
 @Service
-@Slf4j
+@Log4j
 public class JwtCloudStorageDetails implements UserDetailsService {
 
     private final CloudStorageService cloudStorageService;
@@ -30,11 +30,10 @@ public class JwtCloudStorageDetails implements UserDetailsService {
 
         if (user == null) {
             throw new UserNotExistException("User with username: " + username + " not found");
-//            throw new UsernameNotFoundException("User with username: " + username + " not found");
         }
 
         JwtUser jwtUser = JwtUserFactory.create(user);
-        log.info("IN loadUserByUsername - user with username: {} successfully loaded", username);
+        log.info("User with username:" + username + " successfully loaded");
         return jwtUser;
     }
 }

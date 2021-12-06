@@ -8,7 +8,7 @@ http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd
 http://www.liquibase.org/xml/ns/pro
 http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd" >
 
-<!--    <includeAll path="database"/>-->
+   <includeAll path="database"/>
     <changeSet id="0.0.0" author="izvarin.andrey">
         <createTable tableName="users">
             <column name="id" type="BIGINT" autoIncrement="true" >
@@ -83,6 +83,42 @@ http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd" >
     </changeSet>
 
     <changeSet id="0.0.3" author="izvarin.andrey">
+        <createTable tableName="files">
+
+            <column name="user_id" type="BIGINT"/>
+
+            <column name="id" type="BIGINT" autoIncrement="true" >
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="filename" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="content" type="LONGBLOB">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="size" type="LONG">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created" type="TIMESTAMP" defaultValue="CURRENT_TIMESTAMP()">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated" type="TIMESTAMP" defaultValue="CURRENT_TIMESTAMP()">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+    </changeSet>
+
+    <changeSet id="0.0.4" author="izvarin.andrey">
         <addForeignKeyConstraint baseTableName="user_roles"
                                  baseColumnNames="user_id"
                                  constraintName="fk_user_roles_user"
@@ -92,7 +128,7 @@ http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd" >
                                  referencedColumnNames="id" />
     </changeSet>
 
-    <changeSet id="0.0.4" author="izvarin.andrey">
+    <changeSet id="0.0.5" author="izvarin.andrey">
         <addForeignKeyConstraint baseTableName="user_roles"
                                  baseColumnNames="role_id"
                                  constraintName="fk_user_roles_role"
@@ -102,7 +138,17 @@ http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd" >
                                  referencedColumnNames="id" />
     </changeSet>
 
-    <changeSet id="1.0.5" author="izvarin.andrey">
+    <changeSet id="0.0.6" author="izvarin.andrey">
+        <addForeignKeyConstraint baseTableName="files"
+                                 baseColumnNames="user_id"
+                                 constraintName="fk_files_user"
+                                 onDelete="CASCADE"
+                                 onUpdate="RESTRICT"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id" />
+    </changeSet>
+
+    <changeSet id="1.0.0" author="izvarin.andrey">
         <insert tableName="roles">
             <column name="name" value="ROLE_ADMIN"/>
         </insert>
@@ -112,28 +158,27 @@ http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd" >
         </insert>
     </changeSet>
 
-    <changeSet id="1.0.6" author="izvarin.andrey">
+    <changeSet id="1.0.2" author="izvarin.andrey">
         <insert tableName="users">
             <column name="username" value="qwe"/>
             <column name="first_name" value="qwe"/>
             <column name="last_name" value="qwe"/>
             <column name="email" value="qwe"/>
-            <!--pass = qwe-->
             <column name="password" value="$2a$12$GTi79xU2kRWn3FA4DPKyVuQOdHvk1iOKzchiO0ZoRIAiKI7q6lMRW"/>
         </insert>
     </changeSet>
 
-    <changeSet id="1.0.7" author="izvarin.andrey">
+    <changeSet id="1.0.3" author="izvarin.andrey">
         <insert tableName="user_roles">
             <column name="user_id" value="1"/>
             <column name="role_id" value="1"/>
         </insert>
     </changeSet>
 
-    <changeSet id="1.0.8" author="izvarin.andrey">
+    <changeSet id="1.0.4" author="izvarin.andrey">
         <insert tableName="user_roles">
             <column name="user_id" value="1"/>
             <column name="role_id" value="2"/>
         </insert>
     </changeSet>
-</databaseChangeLog >
+</databaseChangeLog>
