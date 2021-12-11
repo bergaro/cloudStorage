@@ -26,4 +26,12 @@ public class CloudStorageExceptionController {
         response.put("id", 0);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+
+    @ExceptionHandler(FileException.class)
+    public ResponseEntity<? extends Map<String, Object>> SaveFileException(FileException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", ex.getMessage());
+        response.put("id", 0);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
 }

@@ -1,9 +1,13 @@
 package ru.netology.cloudstorage.dto;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
 @Data
 public class FileResponseDto {
-    private String filename;
-    private int size;
+    @SerializedName("filename")
+    private String fileName;
+
+    @SerializedName("size")
+    private long size;
 }
