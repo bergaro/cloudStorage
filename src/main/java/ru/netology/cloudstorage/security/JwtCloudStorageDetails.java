@@ -10,23 +10,23 @@ import ru.netology.cloudstorage.exceptions.UserNotExistException;
 import ru.netology.cloudstorage.model.User;
 import ru.netology.cloudstorage.security.jwt.JwtUser;
 import ru.netology.cloudstorage.security.jwt.JwtUserFactory;
-import ru.netology.cloudstorage.service.CloudStorageService;
+import ru.netology.cloudstorage.service.UserService;
 
 
 @Service
 @Log4j
 public class JwtCloudStorageDetails implements UserDetailsService {
 
-    private final CloudStorageService cloudStorageService;
+    private final UserService userService;
 
     @Autowired
-    public JwtCloudStorageDetails(CloudStorageService cloudStorageService) {
-        this.cloudStorageService = cloudStorageService;
+    public JwtCloudStorageDetails(UserService userService) {
+        this.userService = userService;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = cloudStorageService.findByUsername(username);
+        User user = userService.findByUsername(username);
 
         if (user == null) {
             throw new UserNotExistException("User with username: " + username + " not found");
