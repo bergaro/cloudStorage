@@ -1,11 +1,8 @@
 package ru.netology.cloudstorage.service;
 
 import lombok.extern.log4j.Log4j;
-
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.netology.cloudstorage.dto.DownloadFileDto;
 import ru.netology.cloudstorage.dto.FileRequestDto;
@@ -14,48 +11,27 @@ import ru.netology.cloudstorage.dto.RenameFileDto;
 import ru.netology.cloudstorage.exceptions.FileException;
 import ru.netology.cloudstorage.model.Image;
 import ru.netology.cloudstorage.model.Status;
-import ru.netology.cloudstorage.model.User;
 import ru.netology.cloudstorage.repository.FileRepository;
-//import ru.netology.cloudstorage.repository.RoleRepository;
-import ru.netology.cloudstorage.repository.UserRepository;
-import ru.netology.cloudstorage.security.jwt.JwtTokenProvider;
 
 import javax.xml.bind.DatatypeConverter;
 import java.security.MessageDigest;
 import java.sql.Timestamp;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 @Service
 @Log4j
-public class CloudStorageService {
+public class FileService {
 
-    private final UserRepository userRepository;
-//    private final RoleRepository roleRepository;
     private final FileRepository fileRepository;
-//    private final BCryptPasswordEncoder passwordEncoder;
-    private JwtTokenProvider jwtTokenProvider;
+    private final UserService userService;
 
-//    @Autowired
-    public CloudStorageService(UserRepository userRepository, FileRepository fileRepository,
-                               JwtTokenProvider jwtTokenProvider) {
-        this.userRepository = userRepository;
+    @Autowired
+    public FileService(FileRepository fileRepository, UserService userService) {
         this.fileRepository = fileRepository;
-        this.jwtTokenProvider = jwtTokenProvider;
-
-    }
-
-
-
-    public User findByUsername(String username) throws BadCredentialsException {
-        User result = userRepository.findByUsername(username);
-        log.debug("User found:" + result + ";");
-        return result;
-    }
-
-    private long getUserId(String jwtToken) {
-        String userName = jwtTokenProvider.getUsername(jwtToken);
-        return Long.parseLong(userRepository.findUserIdByUsername(userName));
+        this.userService = userService;
     }
 
     public boolean saveNewFile(FileRequestDto fileRequestDto) {
@@ -64,7 +40,7 @@ public class CloudStorageService {
         boolean sendStatus = false;
         try {
             byte[] fileBytes = fileRequestDto.getFile().getBytes();
-            userId = getUserId(fileRequestDto.getRqUserToken());
+            userId = userService.getUserId(fileRequestDto.getRqUserToken());
             image =  new Image();
             image.setUserId(userId);
             image.setFileName(fileRequestDto.getFileName());
@@ -84,11 +60,11 @@ public class CloudStorageService {
         return sendStatus;
     }
 
-    private boolean checkingUniqueness(String fileName, long userId) {
+    public boolean checkingUniqueness(String fileName, long userId) {
         boolean searchStatus = false;
         Image image = fileRepository.findByFileNameAndUserIdAndStatus(fileName, userId, Status.ACTIVE);
         if(image != null && !image.getFileName().equals(fileName)) {
-          searchStatus = true;
+            searchStatus = true;
         } else if (image == null) {
             searchStatus = true;
         }
@@ -97,7 +73,7 @@ public class CloudStorageService {
 
     public boolean deleteFile(FileRequestDto fileRequestDto) {
         boolean deleteStatus = false;
-        long userId = getUserId(fileRequestDto.getRqUserToken());
+        long userId = userService.getUserId(fileRequestDto.getRqUserToken());
         long recordId = getRecordId(userId, fileRequestDto.getFileName());
         if(recordId > 0) {
             fileRepository.deleteById(recordId, Status.DELETED, new Timestamp(new Date().getTime()));
@@ -108,7 +84,7 @@ public class CloudStorageService {
         return deleteStatus;
     }
 
-    private long getRecordId(long userId, String fileName) {
+    public long getRecordId(long userId, String fileName) {
         Long recordId = fileRepository.findRecordId(userId, fileName, Status.ACTIVE);
         if(recordId == null) {
             recordId = 0L;
@@ -119,7 +95,7 @@ public class CloudStorageService {
 
     public DownloadFileDto downloadFile(FileRequestDto fileRequestDto) throws FileException {
         Image image;
-        long userId = getUserId(fileRequestDto.getRqUserToken());
+        long userId = userService.getUserId(fileRequestDto.getRqUserToken());
         long recordId = getRecordId(userId, fileRequestDto.getFileName());
         DownloadFileDto downloadFileDto = new DownloadFileDto();
         if(recordId > 0) {
@@ -151,7 +127,7 @@ public class CloudStorageService {
 
     public boolean renameFile(RenameFileDto renameFileDto) {
         boolean renameState = false;
-        long userId = getUserId(renameFileDto.getRqUserToken());
+        long userId = userService.getUserId(renameFileDto.getRqUserToken());
         long recordId = getRecordId(userId, renameFileDto.getOriginFileName());
         if(recordId > 0) {
             log.info("Record(" + recordId + ") changed;");
@@ -164,10 +140,10 @@ public class CloudStorageService {
     public List<FileResponseDto> getFilesList(FileRequestDto fileRequestDto) {
         FileResponseDto fileResponseDto;
         List<FileResponseDto> files = new ArrayList<>();
-        long userId = getUserId(fileRequestDto.getRqUserToken());
+        long userId = userService.getUserId(fileRequestDto.getRqUserToken());
         List<Image> images = fileRepository.getFileList(userId,
-                                                        Status.ACTIVE,
-                                                        PageRequest.of(0,fileRequestDto.getLimit()));
+                Status.ACTIVE,
+                PageRequest.of(0,fileRequestDto.getLimit()));
         for(Image image : images) {
             fileResponseDto = new FileResponseDto();
             fileResponseDto.setFileName(image.getFileName());
